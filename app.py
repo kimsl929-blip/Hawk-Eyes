@@ -369,12 +369,29 @@ if sentences:
             unsafe_allow_html=True
         )
 
-    # ← 여기부터 추가
+    # ← 여기부터 수정
     st.markdown("---")
-    st.markdown("### Help improve Hawk Eyes")
+    st.markdown("### Was this helpful?")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("👍 Helpful"):
+            st.success("Thanks! 🙏")
+            st.balloons()    
+
+    with col2:
+        if st.button("👎 Not helpful"):
+            st.warning("Got it — thanks!")
+
+    st.markdown("")
+
     st.markdown(
-        "If you tried the tool, I'd really appreciate your quick feedback."
+        "Want to share more detailed feedback? (optional)"
     )
-    st.link_button("Quick Feedback (30 sec)", "https://docs.google.com/forms/d/1R3RRjz9972fiL1A0LvLcO-d8Ch8weHH3-84v8Mfgmg4/edit")    
-        
+
+    st.link_button(
+        "Leave detailed feedback",
+        "https://docs.google.com/forms/d/1R3RRjz9972fiL1A0LvLcO-d8Ch8weHH3-84v8Mfgmg4/edit"
+
 
