@@ -244,6 +244,7 @@ background:#f5f5f5;
 
 user_text = st.text_area(
     "Paste sentences",
+    value="""The court held that the statute, although frequently criticized by commentators, remained binding precedent, and concluded that Congress had exceeded its authority when it enacted the provision.""",
     height=180
 )
 
