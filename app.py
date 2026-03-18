@@ -242,6 +242,7 @@ background:#f5f5f5;
 </div>
 """, unsafe_allow_html=True)
 
+st.markdown("💡 Try editing the example or paste your own text")
 user_text = st.text_area(
     "Paste sentences",
     value="""The court held that the statute, although frequently criticized by commentators, remained binding precedent, and concluded that Congress had exceeded its authority when it enacted the provision.""",
