@@ -258,10 +258,10 @@ col1, col2, col3 = st.columns([2,1,2])
 with col2:
     scan = st.button("Scan Text")
 
-     if scan:
-         st.markdown(
-         "💡 See sentence structure instantly and understand complex sentences with less effort."
-         )
+    if scan:
+        st.markdown(
+        "💡 See sentence structure instantly and understand complex sentences with less effort."
+        )
 
 sentences = split_sentences(clean_text)
 
