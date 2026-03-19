@@ -1,7 +1,23 @@
 import re
 import streamlit as st
+import streamlit.components.v1 as components
 import spacy
 import re
+
+import streamlit.components.v1 as components
+
+components.html(
+    """
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-X3XW7W7L0E"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-X3XW7W7L0E');
+    </script>
+    """,
+    height=0
+)
 
 def preprocess_legal_text(text: str) -> str:
     import re
