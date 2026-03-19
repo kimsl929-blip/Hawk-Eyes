@@ -2,10 +2,8 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 import spacy
-import re
 
-import streamlit.components.v1 as components
-
+st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 components.html(
     """
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-X3XW7W7L0E"></script>
@@ -18,6 +16,8 @@ components.html(
     """,
     height=0
 )
+
+st.title("Hawk Eyes")
 
 def preprocess_legal_text(text: str) -> str:
     import re
