@@ -21,8 +21,6 @@ def log_to_sheet():
 
 log_to_sheet()
 
-st.title("Hawk Eyes")
-
 def preprocess_legal_text(text: str) -> str:
     import re
 
