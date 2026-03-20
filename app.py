@@ -14,6 +14,17 @@ log_visit()
 
 st.title("Hawk Eyes")
 
+import os
+
+if os.path.exists("visitors.log"):
+    with open("visitors.log", "r") as f:
+        logs = f.readlines()
+else:
+    logs = []
+
+st.write("### 방문 로그")
+st.text("".join(logs[-10:]))
+
 def preprocess_legal_text(text: str) -> str:
     import re
 
