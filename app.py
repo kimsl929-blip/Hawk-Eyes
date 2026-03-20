@@ -4,6 +4,14 @@ import spacy
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
+import datetime
+
+def log_visit():
+    with open("visitors.log", "a") as f:
+        f.write(f"{datetime.datetime.now()}\n")
+
+log_visit()
+
 st.title("Hawk Eyes")
 
 def preprocess_legal_text(text: str) -> str:
