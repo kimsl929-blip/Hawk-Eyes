@@ -135,8 +135,6 @@ def hawk_render(text: str):
     return text
 
 
-st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
-
 st.markdown("""
 <style>
 html, body, [class*="css"]  {
