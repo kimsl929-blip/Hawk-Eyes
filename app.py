@@ -4,30 +4,24 @@ import spacy
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
+import requests
 import datetime
 
-def log_visit():
-    with open("visitors.log", "a") as f:
-        f.write(f"{datetime.datetime.now()}\n")
+def log_to_sheet():
+    url = "https://script.google.com/macros/s/AKfycbwXexmdxvp02bDClYknvWOYAlw0pPK5Pj7o6AaGkG3arX-pBjcvFenSiJF0IW6AG6NN/exec"
 
-log_visit()
+    data = {
+        "timestamp": str(datetime.datetime.utcnow())
+    }
+
+    try:
+        requests.post(url, json=data)
+    except:
+        pass
+
+log_to_sheet()
 
 st.title("Hawk Eyes")
-
-import os
-
-params = st.query_params
-
-if "admin" in params:
-    if os.path.exists("visitors.log"):
-        with open("visitors.log", "r") as f:
-            logs = f.readlines()
-    else:
-        logs = []
-
-    st.write("### 방문 로그 (Admin)")
-    st.text("".join(logs[-20:]))
-
 
 def preprocess_legal_text(text: str) -> str:
     import re
