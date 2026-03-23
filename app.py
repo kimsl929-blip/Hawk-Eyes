@@ -1,25 +1,11 @@
 import re
 import streamlit as st
 import spacy
-import requests
-import datetime
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
-scan_clicked = st.button("Scan")
-
-if scan_clicked:
-    placeholder = st.empty()
-
-    # 1️⃣ 즉시 반응
-    placeholder.markdown("### ⚡ Analyzing...")
-
-    # 2️⃣ 실제 분석 (기존 함수)
-    result = run_analysis()
-
-    # 3️⃣ 결과 출력
-    placeholder.markdown(result)
-
+import requests
+import datetime
 
 def log_to_sheet():
     url = "https://script.google.com/macros/s/AKfycbwXexmdxvp02bDClYknvWOYAlw0pPK5Pj7o6AaGkG3arX-pBjcvFenSiJF0IW6AG6NN/exec"
@@ -288,10 +274,23 @@ col1, col2, col3 = st.columns([2,1,2])
 with col2:
     scan = st.button("Scan Text")
 
-    if scan:
-        st.markdown(
+if scan:
+    placeholder = st.empty()
+
+    # 1️⃣ 즉시 반응
+    placeholder.markdown("### ⚡ Analyzing...")
+
+    # 2️⃣ 기존 안내문 (원래 있던 거)
+    st.markdown(
         "💡 See sentence structure instantly and understand complex sentences with less effort."
-        )
+    )
+
+    # 3️⃣ 기존 로직
+    sentences = split_sentences(clean_text)
+    result = run_analysis(sentences)  # 네 기존 구조에 맞게
+
+    # 4️⃣ 결과 출력
+    placeholder.markdown(result)
 
 sentences = split_sentences(clean_text)
 
