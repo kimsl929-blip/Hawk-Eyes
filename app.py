@@ -1,11 +1,25 @@
 import re
 import streamlit as st
 import spacy
+import requests
+import datetime
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
-import requests
-import datetime
+scan_clicked = st.button("Scan")
+
+if scan_clicked:
+    placeholder = st.empty()
+
+    # 1️⃣ 즉시 반응
+    placeholder.markdown("### ⚡ Analyzing...")
+
+    # 2️⃣ 실제 분석 (기존 함수)
+    result = run_analysis()
+
+    # 3️⃣ 결과 출력
+    placeholder.markdown(result)
+
 
 def log_to_sheet():
     url = "https://script.google.com/macros/s/AKfycbwXexmdxvp02bDClYknvWOYAlw0pPK5Pj7o6AaGkG3arX-pBjcvFenSiJF0IW6AG6NN/exec"
