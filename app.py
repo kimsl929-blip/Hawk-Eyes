@@ -271,27 +271,12 @@ user_text = user_text.replace("‘", "").replace("’", "")
 clean_text = preprocess_legal_text(user_text)
 
 col1, col2, col3 = st.columns([2,1,2])
-with col2:
-    scan = st.button("Scan Text")
-
-if scan:
-    placeholder = st.empty()
-
-    # 1️⃣ 즉시 반응
-    placeholder.markdown("### ⚡ Analyzing...")
-
-    # 2️⃣ 기존 안내문 (원래 있던 거)
-    st.markdown(
-        "💡 See sentence structure instantly and understand complex sentences with less effort."
-    )
-
-    # 3️⃣ 기존 로직
-    sentences = split_sentences(clean_text)
-    result = run_analysis(sentences)  # 네 기존 구조에 맞게
-
-    # 4️⃣ 결과 출력
-    placeholder.markdown(result)
-
+with col2: 
+    scan = st.button("Scan Text") 
+    if scan: 
+        st.markdown( 
+            "💡 See sentence structure instantly and understand complex sentences with less effort." 
+        ) 
 sentences = split_sentences(clean_text)
 
 if sentences:
