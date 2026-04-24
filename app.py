@@ -1,5 +1,40 @@
 import re
 import streamlit as st
+
+from openai import OpenAI
+client = OpenAI()
+
+def summarize_text(text):
+    prompt = f"""
+Rewrite the sentence into a VERY short headline.
+
+Rules:
+- Max 6 words
+- No verbs like: says, confirms, states
+- No "that", "as", "is"
+- Use simple everyday words
+- Use ":" or "," to separate ideas
+
+For Korean:
+- Do NOT translate literally
+- Rewrite naturally in Korean
+- Use common, spoken-style phrasing
+
+Format:
+EN: ...
+KR: ...
+
+Sentence:
+{text}
+"""
+   
+    response = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    return response.choices[0].message.content
+
 import spacy
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
@@ -7,7 +42,6 @@ st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 if "usage_count" not in st.session_state:
     st.session_state.usage_count = 0
 
-st.write("DEBUG:", st.session_state.usage_count)
 
 import requests
 import datetime
@@ -326,7 +360,7 @@ if "usage_count" not in st.session_state:
     st.session_state.usage_count = 0
 
 if scan: 
-    if st.session_state.usage_count >= 3:
+    if st.session_state.usage_count >= 999:
             st.warning("Free limit reached. Unlock full access for $3 →")
             st.stop()
 
@@ -408,6 +442,13 @@ if scan:
         doc = docs[i-1]
         
         load_info = compute_sentence_load(doc)
+        
+        # 🔥 여기 추가 (핵심)
+        summary = summarize_text(sent)
+
+        st.markdown(summary)
+        st.markdown("---")
+
         annotated = annotate_doc_with_clauses(doc)
         html = hawk_render(annotated)
         html = html.replace("v__", "v.")
@@ -453,13 +494,7 @@ if scan:
             unsafe_allow_html=True
         )
 
-        # 👇 이것만 추가
-        actions = extract_actions(doc)
-
-        for act in actions:
-            st.markdown(f"👉 {act}")
-
-
+        
     # ← 여기부터 수정
     st.markdown("---")
     st.markdown("### Was this helpful?")
