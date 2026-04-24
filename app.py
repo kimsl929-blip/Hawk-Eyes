@@ -1,14 +1,13 @@
 import re
 import streamlit as st
+import spacy
+
+st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
 if "usage_count" not in st.session_state:
     st.session_state.usage_count = 0
 
 st.write("DEBUG:", st.session_state.usage_count)
-
-import spacy
-
-st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
 
 import requests
 import datetime
