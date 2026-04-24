@@ -1,5 +1,11 @@
 import re
 import streamlit as st
+
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
+
+st.write("DEBUG:", st.session_state.usage_count)
+
 import spacy
 
 st.set_page_config(page_title="Hawk Eyes – Reading OS", layout="wide")
@@ -94,8 +100,7 @@ from mini_os_v3 import (
     compute_core_score
 )
 
-nlp = spacy.load("en_core_web_sm")
-
+nlp = spacy.load("en_core_web_sm", disable=["ner"])
 
 def split_sentences(text: str):
     """
@@ -108,6 +113,50 @@ def split_sentences(text: str):
 
     parts = re.split(r'(?<=[.!?])\s+', text)
     return [p.strip() for p in parts if p.strip()]
+
+def extract_actions(doc):
+    actions = []
+
+    root = None
+    for t in doc:
+        if t.dep_ == "ROOT" and t.pos_ == "VERB":
+            root = t
+            break
+
+    if not root:
+        return actions
+
+    verbs = [root] + [t for t in root.conjuncts if t.pos_ == "VERB"]
+
+    modal = ""
+    neg_flag = False
+
+    for c in root.children:
+        if c.dep_ == "aux":
+            modal = c.text
+        if c.dep_ == "neg":
+            neg_flag = True
+
+    for v in verbs:
+        local_neg = neg_flag or any(c.dep_ == "neg" for c in v.children)
+
+        obj = ""
+        for c in v.children:
+            if c.dep_ in ("dobj", "attr"):
+                obj = " ".join([t.text for t in c.subtree])
+                break
+            if c.dep_ == "prep":
+                pobj = [x for x in c.children if x.dep_ == "pobj"]
+                if pobj:
+                    obj = f"{c.text} " + " ".join([t.text for t in pobj[0].subtree])
+                    break
+
+        neg_text = "not " if local_neg else ""
+        action = f"{modal} {neg_text}{v.lemma_} {obj}".strip()
+
+        actions.append(action)
+
+    return actions
 
 
 def hawk_render(text: str):
@@ -273,24 +322,38 @@ clean_text = preprocess_legal_text(user_text)
 col1, col2, col3 = st.columns([2,1,2])
 with col2: 
     scan = st.button("Scan Text") 
-    if scan: 
-        st.markdown( 
-            "💡 See sentence structure instantly and understand complex sentences with less effort." 
-        ) 
-sentences = split_sentences(clean_text)
 
-if sentences:
-    sentence_scores = []
-    core_scores = []
+if "usage_count" not in st.session_state:
+    st.session_state.usage_count = 0
 
-    for sent in sentences:
-        doc = nlp(sent)
-        load_info = compute_sentence_load(doc)
-        sentence_scores.append(load_info["score"])
+if scan: 
+    if st.session_state.usage_count >= 3:
+            st.warning("Free limit reached. Unlock full access for $3 →")
+            st.stop()
 
-        core_score = compute_core_score(doc, load_info)
+    st.session_state.usage_count += 1
 
-        tokens = [t.text.lower() for t in doc]
+    st.markdown( 
+        "💡 See sentence structure instantly and understand complex sentences with less effort." 
+    ) 
+
+    sentences = split_sentences(clean_text)
+
+    sentences = sentences[:5]
+    if sentences:
+        sentence_scores = []
+        core_scores = []
+
+        docs = list(nlp.pipe(sentences, batch_size=20))
+        
+        for doc in docs:
+            load_info = compute_sentence_load(doc)
+               
+            sentence_scores.append(load_info["score"])
+
+            core_score = compute_core_score(doc, load_info)
+
+            tokens = [t.text.lower() for t in doc]
 
         FIRST_POSITION_SIGNALS = {
             "however", "therefore", "thus", "hence",
@@ -343,7 +406,8 @@ if sentences:
     st.markdown(f'<div class="limit-note">Detected sentences: {len(sentences)}</div>', unsafe_allow_html=True)
 
     for i, sent in enumerate(sentences, 1):
-        doc = nlp(sent)
+        doc = docs[i-1]
+        
         load_info = compute_sentence_load(doc)
         annotated = annotate_doc_with_clauses(doc)
         html = hawk_render(annotated)
@@ -390,6 +454,13 @@ if sentences:
             unsafe_allow_html=True
         )
 
+        # 👇 이것만 추가
+        actions = extract_actions(doc)
+
+        for act in actions:
+            st.markdown(f"👉 {act}")
+
+
     # ← 여기부터 수정
     st.markdown("---")
     st.markdown("### Was this helpful?")
@@ -415,4 +486,3 @@ if sentences:
         "Leave detailed feedback",
         "https://docs.google.com/forms/d/1R3RRjz9972fiL1A0LvLcO-d8Ch8weHH3-84v8Mfgmg4/edit"
     )
-
