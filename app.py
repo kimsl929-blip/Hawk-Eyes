@@ -1,39 +1,74 @@
 import re
 import streamlit as st
 
+st.markdown("""
+<style>
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid #e5e7eb;
+}
+
+.card-title {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.card-summary {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 from openai import OpenAI
 client = OpenAI()
 
-def summarize_text(text):
+def summarize_text(text, lang):
     prompt = f"""
 Rewrite the sentence into a VERY short headline.
 
-Rules:
+STRICT RULES:
+- Use ONLY the content of the sentence
+- DO NOT add new meaning
+- DO NOT interpret or classify
 - Max 6 words
-- No verbs like: says, confirms, states
-- No "that", "as", "is"
 - Use simple everyday words
+- Avoid repeating similar words
 - Use ":" or "," to separate ideas
 
 For Korean:
 - Do NOT translate literally
 - Rewrite naturally in Korean
-- Use common, spoken-style phrasing
 
-Format:
-EN: ...
-KR: ...
+Output ONLY in {lang}
 
 Sentence:
 {text}
 """
-   
+
     response = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
+        temperature=0,  # 🔥 핵심
+        messages=[
+            {
+                "role": "system",
+                "content": "You rewrite sentences into short headlines. No interpretation."
+            },
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
     )
 
-    return response.choices[0].message.content
+    return response.choices[0].message.content.strip()
+
 
 import spacy
 
@@ -356,6 +391,16 @@ col1, col2, col3 = st.columns([2,1,2])
 with col2: 
     scan = st.button("Scan Text") 
 
+# 🔥 여기 추가 (정답 위치)
+lang = st.selectbox(
+    "Summary Language",
+    ["EN", "KR", "JP"]
+)
+
+# 🔥 여기 추가
+show_analysis = st.toggle("Show structure analysis")
+
+
 if "usage_count" not in st.session_state:
     st.session_state.usage_count = 0
 
@@ -372,7 +417,7 @@ if scan:
 
     sentences = split_sentences(clean_text)
 
-    sentences = sentences[:5]
+    sentences = sentences[:10]
     if sentences:
         sentence_scores = []
         core_scores = []
@@ -443,58 +488,78 @@ if scan:
         
         load_info = compute_sentence_load(doc)
         
-        # 🔥 여기 추가 (핵심)
-        summary = summarize_text(sent)
+        # Sentence 정보 먼저
+        st.markdown(
+            f'<div class="card-title">★ Sentence {i} · Load: {load_info["score"]}</div>',
+            unsafe_allow_html=True
+        )
+        
 
-        st.markdown(summary)
+        # 🔥 그 다음 summary
+        summary = summarize_text(sent, lang)
+
+        # 🔥 여기 추가
+        def simple_tag(summary):
+            if any(x in summary for x in ["증가", "필요", "감소"]):
+                return "Main Claim"
+            elif any(x in summary for x in ["예상", "수치", "BC", "년"]):
+                return "Support"
+            elif any(x in summary for x in ["하지만", "적음", "제한"]):
+                return "Counterargument"
+            else:
+                return "Support"
+
+        tag = simple_tag(summary)
+
+        st.markdown(f"[{tag}] {summary}")
+
+        if show_analysis:
+            annotated = annotate_doc_with_clauses(doc)
+            html = hawk_render(annotated)
+                    
+            badge = render_load_badge(load_info["label"], load_info["score"])
+
+            if primary_idx is not None and i - 1 == primary_idx:
+                core_mark = "★ "
+                core_class = "core-primary"
+            elif (i - 1) in secondary_idx:
+                core_mark = "☆ "
+                core_class = "core-secondary"
+            else:
+                core_mark = ""
+                core_class = ""
+
+            if primary_idx is not None and i - 1 == primary_idx:
+                core_mark = "★ "
+                core_style = 'background:#fff7cc; box-shadow: inset 0 0 0 2px #f4c542;'
+            elif (i - 1) in secondary_idx:
+                core_mark = "☆ "
+                core_style = 'background:#f3f4f6; box-shadow: inset 0 0 0 1px #9ca3af;'
+            else:
+                core_mark = ""
+                core_style = ""
+
+
+            st.markdown(
+                f'<div class="block-label">{core_mark}Sentence {i} · Load: {badge}</div>',
+                unsafe_allow_html=True
+            )
+
+            load_class = load_info["label"].lower()
+            if load_class == "light":
+                load_class = "light"
+            elif load_class == "moderate":
+                load_class = "moderate"
+            else:
+                load_class = "heavy"
+
+            st.markdown(
+                f'<div class="hawk-line load-{load_class}" style="{core_style}">{html}</div>',
+                unsafe_allow_html=True
+            )
+
         st.markdown("---")
 
-        annotated = annotate_doc_with_clauses(doc)
-        html = hawk_render(annotated)
-        html = html.replace("v__", "v.")
-
-        badge = render_load_badge(load_info["label"], load_info["score"])
-
-        if primary_idx is not None and i - 1 == primary_idx:
-            core_mark = "★ "
-            core_class = "core-primary"
-        elif (i - 1) in secondary_idx:
-            core_mark = "☆ "
-            core_class = "core-secondary"
-        else:
-            core_mark = ""
-            core_class = ""
-
-        if primary_idx is not None and i - 1 == primary_idx:
-            core_mark = "★ "
-            core_style = 'background:#fff7cc; box-shadow: inset 0 0 0 2px #f4c542;'
-        elif (i - 1) in secondary_idx:
-            core_mark = "☆ "
-            core_style = 'background:#f3f4f6; box-shadow: inset 0 0 0 1px #9ca3af;'
-        else:
-            core_mark = ""
-            core_style = ""
-
-
-        st.markdown(
-            f'<div class="block-label">{core_mark}Sentence {i} · Load: {badge}</div>',
-            unsafe_allow_html=True
-        )
-
-        load_class = load_info["label"].lower()
-        if load_class == "light":
-            load_class = "light"
-        elif load_class == "moderate":
-            load_class = "moderate"
-        else:
-            load_class = "heavy"
-
-        st.markdown(
-            f'<div class="hawk-line load-{load_class}" style="{core_style}">{html}</div>',
-            unsafe_allow_html=True
-        )
-
-        
     # ← 여기부터 수정
     st.markdown("---")
     st.markdown("### Was this helpful?")
