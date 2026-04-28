@@ -92,7 +92,11 @@ def log_to_sheet():
     except:
         pass
 
-log_to_sheet()
+# 👉 여기 추가
+is_admin = st.query_params.get("admin") == "1"
+
+if not is_admin:
+    log_to_sheet()
 
 def preprocess_legal_text(text: str) -> str:
     import re
