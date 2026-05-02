@@ -43,7 +43,7 @@ def generate_report(student, content, understanding, attitude, strengths):
 - 1:1 수업 기준으로 작성
 - "동료 학생", "다른 학생" 표현 금지
 - 자연스럽고 전문적인 한국어
-- to 부정사의 개념을 명확히 grasp하고 있으며, 실습 결과도 매우 우수합니다.
+- to 부정사의 개념을 명확히 이해하고 있으며, 실전문제 적용능력 우수합니다.
 - 각 문장은 줄바꿈으로 구분
 """
     
