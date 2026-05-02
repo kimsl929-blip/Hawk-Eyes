@@ -70,8 +70,8 @@ def create_pdf(text, student):
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
 
     # 🔥 폰트
-    pdfmetrics.registerFont(TTFont("Malgun", "C:/Windows/Fonts/malgun.ttf"))
-
+    pdfmetrics.registerFont(TTFont("Malgun", "malgun.ttf"))
+    
     doc = SimpleDocTemplate(tmp.name)
     styles = getSampleStyleSheet()
 
