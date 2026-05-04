@@ -7,7 +7,7 @@ from openai import OpenAI
 
 client = OpenAI()
 
-menu = st.sidebar.selectbox("메뉴", ["Reading", "Report"])
+menu = st.sidebar.selectbox("메뉴", ["Report", "Reading"])
 
 # -----------------------------
 # 스타일
